@@ -1,6 +1,6 @@
 # EDPcausal
 
-The codes are to run two simulation scenarios in the main manuscript. 
+The codes are to run two simulation scenarios in the main manuscript "Bayesian nonparametric model for heterogeneous treatment effects with zero-inflated data".  
 
 # Explain the simulation scenarios
 
