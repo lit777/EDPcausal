@@ -1,17 +1,15 @@
 # EDPcausal
 
-The codes are to run two simulation scenarios in the main manuscript "Bayesian nonparametric model for heterogeneous treatment effects with zero-inflated data".  
+The codes are to run two simulation scenarios in the main manuscript "*Bayesian nonparametric model for heterogeneous treatment effects with zero-inflated data*" by Chanmin Kim, Yisheng Li, Ting Xu, and Zhongxing Liao.  
 
 # Explain the simulation scenarios
 
-We consider two different simulation scenarios. In scenario 1, the sets of covariates for
-both confounders and effect modifiers are identical (X = U). In scenario 2, the set of effect
-modifiers includes more covariates than the set of confounders (i.e.,X   U; a proper subset).
-Table 1 describes the data generating mechanism for scenario 1. For scenario 2, we consider
-two additional effect modifiers X6 and X7.
+We examine two distinct simulation scenarios. In Scenario 1, the degree of violation of the overlap assumption is moderate, while in Scenario 2, the violation of the overlap assumption is severe. In Scenario 1, there is overlap between the two groups when considering the values of X2 within the range of -1 to 2. However, the overlap region becomes significantly narrower in Scenario 2. For the simulated data (n = 600), we generate one binary covariate and four continuous covariates as effect modifiers. The binary treatment is generated using a logistic regression model, while the outcome is generated from a truncated normal distribution. The probability π for generating excessive 0 values is derived from the logistic regression model.
 
 # MCMC running
 
-    - Run 'sim_new_s1.R' or 'sim_new_s2.R' script for obtaining posterior samples for scenario 1 or scenario 2, respectively.
+    - Scenario 1: 
+        1. Download the `sim`' folder. 
+        2. run `sim_edp.R` for the proposed model; run `sim_bcf.R` or `sim_dpglm.R` for the competing models.
     - Executing 'colMeans(temp)' produces the cluster-specific effects.
     
