@@ -8,8 +8,8 @@ We examine two distinct simulation scenarios. In Scenario 1, the degree of viola
 
 # MCMC running
 
-    - Scenario 1: 
-        1. Download the `sim`' folder. 
-        2. run `sim_edp.R` for the proposed model; run `sim_bcf.R` or `sim_dpglm.R` for the competing models.
-    - Executing 'colMeans(temp)' produces the cluster-specific effects.
+* Scenario 1: 
+  1. Download the `sim`' folder. 
+  2. run `sim_edp.R` for the proposed model; run `sim_bcf.R` or `sim_dpglm.R` for the competing models.
+* Executing 'colMeans(temp)' produces the cluster-specific effects.
     
