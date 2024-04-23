@@ -5,8 +5,6 @@
 E.F <- matrix(ncol=200, nrow=600)
 a<-y<-Y1<-Y0<-Pi0<-Pi1<-p0<-p1<-Y1M0<-p10<-Pi10<-NULL
 
-load("covariate.RData")
-
 for(test_case in 1:200){
 #------ required libraries
 library(bcf)
@@ -17,6 +15,11 @@ library(extraDistr)
 library(truncnorm)
 library(dplyr)
 
+x1 <- rbinom(600, 1, 0.7)
+x2 <- rep(c(-2,-1,0,1,2,3), each=100)
+x3 <- rnorm(600, 0, 1)
+x4 <- rnorm(600, 0, 1)
+x5 <- rnorm(600, 0, 1)
 
 #------ Preparation of the simulation data / initial set-ups
   ll <- 0
@@ -29,8 +32,8 @@ library(dplyr)
   for(i in 1:600){
   # version 2
     a[i] <- rbinom(1,1,expit(1-1*x1[i]+2*x2[i]-1*abs(x3[i]-1)+0.4*x4[i]*x5[i]))
-    p0[i] <- expit(-3.5+0.2*x1[i]-0.5*x3[i]-3.5*I(x2[i]>0)*0+0.2*x4[i]+0.2*x5[i])
-    p1[i] <- expit(-3.5+0.2*x1[i]-0.5*x3[i]-3.5*I(x2[i]>0)*1+0.2*x4[i]+0.2*x5[i])
+    p0[i] <- expit(-2.5+0.2*x1[i]-0.5*x3[i]-3.5*I(x2[i]>0)*0+0.2*x4[i]+0.2*x5[i])
+    p1[i] <- expit(-2.5+0.2*x1[i]-0.5*x3[i]-3.5*I(x2[i]>0)*1+0.2*x4[i]+0.2*x5[i])
     Pi0[i] <- sample(c(0,1), 1, prob=c(1-p0[i], p0[i]))
     Pi1[i] <- sample(c(0,1), 1, prob=c(1-p1[i], p1[i]))
     rn1 <- rnorm(1,  mean=0.4*x1[i]+2*x2[i]+1*x2[i]^2*1-2.5*1+0.3*abs(x3[i]+1)+0.4*x4[i]+exp(0.1*x5[i]), sd=0.1)
@@ -44,7 +47,7 @@ library(dplyr)
   
   y <- a*Y1+(1-a)*Y0
   x <- cbind(1, x1, x2, x3, x4, x5)
-  fit <- bcf(y, a, cbind(x1,x2,x3,x4,x5), cbind(x1,x2,x3,x4,x5), pihat, nburn=3000, nsim=3000)
+  fit <- bcf(y, a, cbind(x1,x2,x3,x4,x5), cbind(x1,x2,x3,x4,x5), pihat, nburn=5000, nsim=5000)
   
   plot(x2, Y1-Y0, ylim=c(-10,15))
   points(x2, colMeans(fit$tau), col="red", cex=0.2)

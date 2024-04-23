@@ -18,10 +18,16 @@ source("SourceCode/G_comp_Vectorized_FunctionSourceCode.R")
 
 a<-y<-Y1<-Y0<-Pi0<-Pi1<-p0<-p1<-Y1M0<-p10<-Pi10<-NULL
 
-load("covariate.RData")
 
 for(process in 1:200){
-        
+
+    x1 <- rbinom(600, 1, 0.7)
+    x2 <- rep(c(-2,-1,0,1,2,3), each=100)
+    x3 <- rnorm(600, 0, 1)
+    x4 <- rnorm(600, 0, 1)
+    x5 <- rnorm(600, 0, 1)
+
+    
 n<-600 
 
 Expit <- function(x){
@@ -30,8 +36,8 @@ Expit <- function(x){
 
 for(i in 1:600){
   a[i] <- rbinom(1,1,Expit(1-1*x1[i]+2*x2[i]-1*abs(x3[i]-1)+0.4*x4[i]*x5[i]))
-  p0[i] <- Expit(-3.5+0.2*x1[i]-0.5*x3[i]-3.5*I(x2[i]>0)*0+0.2*x4[i]+0.2*x5[i])
-  p1[i] <- Expit(-3.5+0.2*x1[i]-0.5*x3[i]-3.5*I(x2[i]>0)*1+0.2*x4[i]+0.2*x5[i])
+  p0[i] <- Expit(-2.5+0.2*x1[i]-0.5*x3[i]-3.5*I(x2[i]>0)*0+0.2*x4[i]+0.2*x5[i])
+  p1[i] <- Expit(-2.5+0.2*x1[i]-0.5*x3[i]-3.5*I(x2[i]>0)*1+0.2*x4[i]+0.2*x5[i])
   Pi0[i] <- sample(c(0,1), 1, prob=c(1-p0[i], p0[i]))
   Pi1[i] <- sample(c(0,1), 1, prob=c(1-p1[i], p1[i]))
   rn1 <- rnorm(1,  mean=0.4*x1[i]+2*x2[i]+1*x2[i]^2*1-2.5*1+0.3*abs(x3[i]+1)+0.4*x4[i]+exp(0.1*x5[i]), sd=0.1)
@@ -76,14 +82,21 @@ adjmat <- calc_adjmat(DPglm_res$c_shell)
 
 temp1 <- matrix(nrow=10000, ncol=600)
 temp0 <- matrix(nrow=10000, ncol=600)
+
+temp.pi1 <- matrix(nrow=10000, ncol=600)
+temp.pi0 <- matrix(nrow=10000, ncol=600)
+
 for(t in 1:10000){
   for(tt in 1:2){
     eval(parse(text=(paste0('temp1[t, ]<-DPglm_res$pp$"',t+10000,'"$y_isp1'))))
     eval(parse(text=(paste0('temp0[t, ]<-DPglm_res$pp$"',t+10000,'"$y_isp0'))))
+    eval(parse(text=(paste0('temp.pi1[t, ]<-DPglm_res$pp$"',t+10000,'"$z_isp1'))))
+    eval(parse(text=(paste0('temp.pi0[t, ]<-DPglm_res$pp$"',t+10000,'"$z_isp0'))))
+    
   }
 }
 
 print(process)
-save(temp1,temp0, Y1,Y0, file=paste("out_jason",process,".RData",sep=""))
+save(temp1,temp0, temp.pi1,temp.pi0, Y1,Y0, Pi0, Pi1, file=paste("out_jason",process,".RData",sep=""))
 }
 
