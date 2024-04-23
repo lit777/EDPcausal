@@ -38,7 +38,7 @@ List clustering_c(
   int M = 1;                   // num of auxilary clusters = 1
   double mu_r = 0;
   double mu_beta = 0;
-  double Sigma_r = 7;
+  double Sigma_r = 10;
   double Sigma_beta = 10;
   NumericMatrix ycoef_r(7,1); // num of col. in design mat = 7
   NumericMatrix ycoef_beta(7,1); // num of col. in design mat = 7
@@ -59,6 +59,12 @@ List clustering_c(
   double tau0 = 1;
   double c0 = 1;
   
+  // Obtaining namespace of truncnorm package
+  Environment truncnorm = Environment::namespace_env("truncnorm");
+  
+  // Picking up dtruncnorm() and ptruncnorm() function from truncnorm package
+  Function dtruncnorm  = truncnorm["dtruncnorm"];
+  Function ptruncnorm = truncnorm["ptruncnorm"];
   // Obtaining namespace
   Function order("order");
   
@@ -208,7 +214,7 @@ List clustering_c(
     for(int i = 0; i < M; i++) {
       ycoef_r(_,0) = Rcpp::rnorm(7, mu_r, sqrt(Sigma_r)); 
       ycoef_beta(_,0) = Rcpp::rnorm(7, mu_beta, sqrt(Sigma_beta)); 
-      ycoef_sig = Rcpp::rgamma(1, 1, 5)(0);
+      ycoef_sig = Rcpp::rgamma(1, 0.1, 0.1)(0);
       
       x_cat0 = rdirichlet_cpp(1, alpha00);
       x_cat1 = rdirichlet_cpp(1, alpha01);
@@ -290,7 +296,7 @@ List clustering_c(
     for(int i = 0; i < M; i++) {
       ycoef_r(_,0) = Rcpp::rnorm(7, mu_r, sqrt(Sigma_r)); 
       ycoef_beta(_,0) = Rcpp::rnorm(7, mu_beta, sqrt(Sigma_beta)); 
-      ycoef_sig = Rcpp::rgamma(1, 1, 5)(0);
+      ycoef_sig = Rcpp::rgamma(1, 0.1, 0.1)(0);
       
       x_cat0 = rdirichlet_cpp(1, alpha00);
       x_cat1 = rdirichlet_cpp(1, alpha01);
@@ -390,7 +396,7 @@ List clustering_c(
       {
         ycoef_r(_,0) = Rcpp::rnorm(7, mu_r, sqrt(Sigma_r)); 
         ycoef_beta(_,0) = Rcpp::rnorm(7, mu_beta, sqrt(Sigma_beta)); 
-        ycoef_sig = Rcpp::rgamma(1, 1, 5)(0);
+        ycoef_sig = Rcpp::rgamma(1, 0.1, 0.1)(0);
       }
       
       x_cat0 = rdirichlet_cpp(1, alpha00);
@@ -481,6 +487,7 @@ List clustering_c(
     for(int l = 0; l < numXj(j)+M; l++) {
       arma::mat r = as<arma::mat>(xa).row(h)*ypar_r.col(j);
       arma::mat b = as<arma::mat>(xa).row(h)*ypar_beta.col(j);
+      SEXP dt = dtruncnorm(y(h),0, pow(10, 10), b(0,0), sqrt(ypar_sig(j)));
       if(l  < numXj(j))
       {
         P(indbase+l) = nji(j)*nlji(j,l) / (nji(j) + alpha_omega)*
@@ -490,8 +497,8 @@ List clustering_c(
           R::dnorm(xa(h,4), xpar_mu(1, indbase+l), sqrt(xpar_sig(1, indbase+l)),false)*
           R::dnorm(xa(h,5), xpar_mu(2, indbase+l), sqrt(xpar_sig(2, indbase+l)),false)*
           R::dnorm(xa(h,6), xpar_mu(3, indbase+l), sqrt(xpar_sig(3, indbase+l)),false)*
-          (IY * exp(r(0,0))/exp(1+r(0,0)) + (1-exp(r(0,0))/exp(1+r(0,0)))*
-          R::dnorm(y(h), b(0,0), sqrt(ypar_sig(j)),false));
+          (IY * exp(r(0,0))/exp(1+r(0,0)) + (1 - IY) * (1-exp(r(0,0))/exp(1+r(0,0)))*
+          (*REAL(dt)));
       }
       else
       {
@@ -502,8 +509,8 @@ List clustering_c(
           R::dnorm(xa(h,4), xpar_mu(1, indbase+l), sqrt(xpar_sig(1, indbase+l)),false)*
           R::dnorm(xa(h,5), xpar_mu(2, indbase+l), sqrt(xpar_sig(2, indbase+l)),false)*
           R::dnorm(xa(h,6), xpar_mu(3, indbase+l), sqrt(xpar_sig(3, indbase+l)),false)*
-          (IY * exp(r(0,0))/exp(1+r(0,0)) + (1-exp(r(0,0))/exp(1+r(0,0)))*
-          R::dnorm(y(h), b(0,0), sqrt(ypar_sig(j)),false));          
+          (IY * exp(r(0,0))/exp(1+r(0,0)) + (1 - IY) * (1-exp(r(0,0))/exp(1+r(0,0)))*
+          (*REAL(dt)));          
       }
       Py(indbase+l) = j + 1;
       Px(indbase+l) = l + 1;
@@ -515,6 +522,7 @@ List clustering_c(
     arma::mat b = as<arma::mat>(xa).row(h)*ypar_beta.col(j);
     Py(indbase) = j + 1;
     Px(indbase) = 1;
+    SEXP dt = dtruncnorm(y(h),0, pow(10, 10), b(0,0), sqrt(ypar_sig(j)));
     P(indbase) =  (alpha_theta / M)*(alpha_omega/M) / (alpha_omega)*
       R::dbinom(xa(h,1), 1, xpar_p0(indbase,1), false)*
       R::dbinom(xa(h,2), 1, xpar_p1(indbase,1), false)*
@@ -522,8 +530,8 @@ List clustering_c(
       R::dnorm(xa(h,4), xpar_mu(1, indbase), sqrt(xpar_sig(1, indbase)),false)*
       R::dnorm(xa(h,5), xpar_mu(2, indbase), sqrt(xpar_sig(2, indbase)),false)*
       R::dnorm(xa(h,6), xpar_mu(3, indbase), sqrt(xpar_sig(3, indbase)),false)*
-      (IY * exp(r(0,0))/exp(1+r(0,0)) + (1-exp(r(0,0))/exp(1+r(0,0)))*
-      R::dnorm(y(h), b(0,0), sqrt(ypar_sig(j)),false));        
+      (IY * exp(r(0,0))/exp(1+r(0,0)) + (1 - IY) * (1-exp(r(0,0))/exp(1+r(0,0)))*
+      (*REAL(dt)));        
     indbase++;
   }
 

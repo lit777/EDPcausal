@@ -39,18 +39,18 @@ update_parameters <- function(Sx, Sy, xPAR_p0, xPAR_p1, xPAR_mu, xPAR_sig, yPAR_
     
     X_lj <- matrix(subset(xa, Sy==j), ncol=7)
     prop <- rgamma(1, 10000*yPAR_sig[j,1], 10000)
-    num <- sum(log(expit(yPAR_r[,j], X_lj)*identity(subset(y, Sy==j)==0)+(1-expit(yPAR_r[,j], X_lj))*dnorm(subset(y, Sy==j),  mean=X_lj%*%yPAR_beta[,j], sd=sqrt(prop)) ))+dgamma(prop, 1,1,log=TRUE) + dgamma(yPAR_sig[j,1],10000*prop,10000,log=TRUE)
-    den <- sum(log(expit(yPAR_r[,j], X_lj)*identity(subset(y, Sy==j)==0)+(1-expit(yPAR_r[,j], X_lj))*dnorm(subset(y, Sy==j), mean=X_lj%*%yPAR_beta[,j], sd=sqrt(yPAR_sig[j,1])) ))+dgamma(yPAR_sig[j,1], 1,1,log=TRUE) + dgamma(prop,10000*yPAR_sig[j,1],10000,log=TRUE)
-    if (log(runif(1))< (num-den)){
+    num <- sum(log(expit(yPAR_r[,j], X_lj)*identity(subset(y, Sy==j)==0)+identity(subset(y, Sy==j)!=0)*(1-expit(yPAR_r[,j], X_lj))*dtruncnorm(subset(y, Sy==j), a=0, b=Inf, mean=X_lj%*%yPAR_beta[,j], sd=sqrt(prop)) ))+dgamma(prop, 0.1,10,log=TRUE) + dgamma(yPAR_sig[j,1],10000*prop,10000,log=TRUE)
+    den <- sum(log(expit(yPAR_r[,j], X_lj)*identity(subset(y, Sy==j)==0)+identity(subset(y, Sy==j)!=0)*(1-expit(yPAR_r[,j], X_lj))*dtruncnorm(subset(y, Sy==j), a=0, b=Inf, mean=X_lj%*%yPAR_beta[,j], sd=sqrt(yPAR_sig[j,1])) ))+dgamma(yPAR_sig[j,1], 0.1,10,log=TRUE) + dgamma(prop,10000*yPAR_sig[j,1],10000,log=TRUE)
+    if (log(runif(1))< (num-den) & !is.nan(num-den)){
       yPAR_sig[j,1] <- prop
     }
     
     prop <-  yPAR_beta[,j]
     for(cc in 1:length(yPAR_beta[,j])){   
       prop[cc] <- yPAR_beta[cc,j] + rnorm(1, 0, 0.05)
-      num <- sum(log(expit(yPAR_r[,j], X_lj)*identity(subset(y, Sy==j)==0)+(1-expit(yPAR_r[,j], X_lj))*dnorm(subset(y, Sy==j), mean=X_lj%*%prop, sd=sqrt(yPAR_sig[j,1])) ))+dnorm(yPAR_beta[cc,j], mu.beta, sqrt(Sigma.beta), log=TRUE)
-      den <- sum(log(expit(yPAR_r[,j], X_lj)*identity(subset(y, Sy==j)==0)+(1-expit(yPAR_r[,j], X_lj))*dnorm(subset(y, Sy==j), mean=X_lj%*%yPAR_beta[,j], sd=sqrt(yPAR_sig[j,1])) ))+dnorm(yPAR_beta[cc,j], mu.beta, sqrt(Sigma.beta), log=TRUE)
-      if (log(runif(1))< (num-den)){
+      num <- sum(log(expit(yPAR_r[,j], X_lj)*identity(subset(y, Sy==j)==0)+identity(subset(y, Sy==j)!=0)*(1-expit(yPAR_r[,j], X_lj))*dtruncnorm(subset(y, Sy==j),  a=0, b=Inf, mean=X_lj%*%prop, sd=sqrt(yPAR_sig[j,1])) ))+dnorm(yPAR_beta[cc,j], mu.beta, sqrt(Sigma.beta), log=TRUE)
+      den <- sum(log(expit(yPAR_r[,j], X_lj)*identity(subset(y, Sy==j)==0)+identity(subset(y, Sy==j)!=0)*(1-expit(yPAR_r[,j], X_lj))*dtruncnorm(subset(y, Sy==j),  a=0, b=Inf, mean=X_lj%*%yPAR_beta[,j], sd=sqrt(yPAR_sig[j,1])) ))+dnorm(yPAR_beta[cc,j], mu.beta, sqrt(Sigma.beta), log=TRUE)
+      if (log(runif(1))< (num-den) & !is.nan(num-den)){
         yPAR_beta[cc,j] <- prop[cc]
       
       }else{ 
@@ -61,9 +61,9 @@ update_parameters <- function(Sx, Sy, xPAR_p0, xPAR_p1, xPAR_mu, xPAR_sig, yPAR_
     prop <-  yPAR_r[,j]
     for(cc in 1:length(yPAR_r[,j])){ 
       prop[cc] <- yPAR_r[cc,j] + rnorm(1, 0, 0.05)
-      num <- sum(log(expit(prop, X_lj)*identity(subset(y, Sy==j)==0)+(1-expit(prop, X_lj))*dnorm(subset(y, Sy==j),mean=X_lj%*%yPAR_beta[,j], sd=sqrt(yPAR_sig[j,1]))   ))+dnorm(prop[cc], mu.r, sqrt(Sigma.r), log=TRUE)
-      den <- sum(log(expit(yPAR_r[,j], X_lj)*identity(subset(y, Sy==j)==0)+(1-expit(yPAR_r[,j], X_lj))*dnorm(subset(y, Sy==j), mean=X_lj%*%yPAR_beta[,j], sd=sqrt(yPAR_sig[j,1]))   ))+dnorm(yPAR_r[cc,j], mu.r, sqrt(Sigma.r), log=TRUE)
-      if (log(runif(1))< (num-den)){
+      num <- sum(log(expit(prop, X_lj)*identity(subset(y, Sy==j)==0)+identity(subset(y, Sy==j)!=0)*(1-expit(prop, X_lj))*dtruncnorm(subset(y, Sy==j), a=0, b=Inf, mean=X_lj%*%yPAR_beta[,j], sd=sqrt(yPAR_sig[j,1]))   ))+dnorm(prop[cc], mu.r, sqrt(Sigma.r), log=TRUE)
+      den <- sum(log(expit(yPAR_r[,j], X_lj)*identity(subset(y, Sy==j)==0)+identity(subset(y, Sy==j)!=0)*(1-expit(yPAR_r[,j], X_lj))*dtruncnorm(subset(y, Sy==j),  a=0, b=Inf, mean=X_lj%*%yPAR_beta[,j], sd=sqrt(yPAR_sig[j,1]))   ))+dnorm(yPAR_r[cc,j], mu.r, sqrt(Sigma.r), log=TRUE)
+      if (log(runif(1))< (num-den) & !is.nan(num-den)){
         yPAR_r[cc,j] <- prop[cc]
       }else{ 
         prop[cc] <- yPAR_r[cc,j]
