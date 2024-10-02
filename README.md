@@ -10,8 +10,8 @@ We examine two distinct simulation scenarios. In Scenario 1, the degree of viola
 
 * Scenario 1: 
   1. Download the `sim1` folder. 
-  2. run `sim_edp.R` for the proposed model; run `sim_bcf.R` or `sim_dpglm.R` for the competing models.
+  2. run `sim_edp_large.R` for the proposed model (Inv.Gamma(10,rate=1000) for the variance parameter) or run `sim_edp_small.R` for the proposed model (Inv.Gamma(1,rate=1)); run `sim_bcf.R` or `sim_dpglm.R` for the competing models.
 * Scenario 1: 
   1. Download the `sim2` folder. 
-  2. run `sim_edp.R` for the proposed model; run `sim_bcf.R` or `sim_dpglm.R` for the competing models.
+  2. run `sim_edp_large.R` for the proposed model (Inv.Gamma(10,rate=1000) for the variance parameter) or run `sim_edp_small.R` for the proposed model (Inv.Gamma(1,rate=1)); ; run `sim_bcf.R` or `sim_dpglm.R` for the competing models.
     
